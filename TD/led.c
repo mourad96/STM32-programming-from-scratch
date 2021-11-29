@@ -1,25 +1,46 @@
 #include <stdint.h>
 #include "led.h"
+#include "stm32l475xx.h"
 
-#define RCC_BASE 0x40021000
-#define RCC_AHB2ENR *((volatile uint32_t*)(RCC_BASE+0x4C))
 
-#define GPIOB_BASE 0x48000400 
-#define GPIOB_MODER *((volatile uint32_t*)(GPIOB_BASE+0x00))
-#define GPIOx_ODR   *((volatile uint32_t*)(GPIOB_BASE+0x14))
+void led(enum state state)
+{
+   if(state == LED_OFF)
+   {
+      // configurer en entrée
+    GPIOC->MODER &= ~ GPIO_MODER_MODE9;//PC9 est en entrée (= haute impédance), les deux LED sont éteintes.
+    
+   }
+   else if (state == LED_YELLOW)
+   {
+      // sortie, état haut
+      GPIOC->BSRR = GPIO_BSRR_BS9; //PC9 est en sortie à l'état haut, LED3 est allumée, LED4 est éteinte.
+      GPIOC->MODER = (GPIOC->MODER & ~GPIO_MODER_MODE9_Msk) | GPIO_MODER_MODE9_0; 
+   }
+   else
+   {
+      // sorti, état bas 
+     GPIOC->BSRR   = GPIO_BSRR_BR9;  //PC9 est en sortie à l'état bas, LED3 est éteinte, LED4 est allumée.
+     GPIOC->MODER = (GPIOC->MODER & ~GPIO_MODER_MODE9_Msk) | GPIO_MODER_MODE9_0;
+     //GPIOC->BRR = GPIO_BRR_BR9;
+   }
+}
 
 void led_init()
 {
-   //activation du clock du GPIOB
-   RCC_AHB2ENR =(RCC_AHB2ENR & ~(0x1<<1U))| (0x1<<1U);  //IO port B clock enabled
+   //activation du clock du GPIOB et GPIOC
+   
+  RCC->AHB2ENR |= (RCC_AHB2ENR_GPIOBEN | RCC_AHB2ENR_GPIOCEN);//IO port B clock enabled et IO port C clock enabled
+                                                            
    //PB14 en mode sortie
-   GPIOB_MODER =(GPIOB_MODER & ~(0x3<<28U))| (0x1<<28U);
+   GPIOB->MODER = (GPIOB->MODER & ~ GPIO_MODER_MODE14_Msk) | GPIO_MODER_MODE14_0;
+   
 }
 void led_g_on()
 {
-  GPIOx_ODR  =(GPIOx_ODR & ~(0x1<<14U))| (0x1<<14U);//PB14 is on
+  GPIOB->ODR |= GPIO_ODR_OD14;//PB14 is on
 }
 void led_g_off()
 {
-   GPIOx_ODR  =(GPIOx_ODR & ~(0x1<<14U));//PB14 is off
+   GPIOB->ODR &= ~GPIO_ODR_OD14;//PB14 is off
 }

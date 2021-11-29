@@ -2,6 +2,11 @@ target ext :2331
 mon endian little
 mon halt
 
+
+define printSCB
+  p/x *((SCB_Type*)(0xE000E000+0x0D00))
+end
+
 # interface with asm, regs and cmd windows
 define split
   layout split

@@ -33,13 +33,12 @@ int8_t memcmp(const void* src1, const void* src2, uint32_t len) {
 	return 0;
 }
 
-void* memove(const void* source, void* dest, uint32_t len) {
+void* memmove(const void* source, void* dest, uint32_t len) {
 	const uint8_t* s = (const uint8_t*) source;
 	uint8_t* d = (uint8_t*) dest;
 
 		if(d < s) {
-			while(len--)
-				*d++ = *s++;
+			memcpy(s,d,len);
 		} else {
 			uint8_t *lasts = (uint8_t*)s + len - 1;
 			uint8_t *lastd = (uint8_t*)d + len - 1;

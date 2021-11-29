@@ -6,23 +6,50 @@ MEMORY
 }
 _stack = ORIGIN(sram2) + LENGTH(sram2);
 ENTRY(_start)
+_sfvector_table_lma = LOADADDR(.vector_table);
+_startcopy_vma = ADDR(.vector_table);
+_endcopy_vma = SIZEOF(.vector_table) + SIZEOF(.text) +SIZEOF(.data);
 
 SECTIONS
 {
   /*programme*/
+  .vector_flash :
+  {
+    *(.vector_flash)
+  } > flash
+
+  .boot : {
+    /* TODO */
+    vector_flash.o(.text)
+    memfuncs.o(.text)
+    init.o(.text)
+    ctr0.o(.text)
+  } > flash
+
+    /*constantes ici*/
+  .rodata : {
+    rodata_begin = .;
+    *(.rodata)
+    rodata_end = .;
+  }>flash
+
+  .vector_table : {
+    *(.vector_table)
+  } >sram1 AT> flash
+
   .text : {
     *(.text)
-  }>sram1
+    text_end = .;
+  }>sram1 AT> flash
 
-  /*constantes ici*/
-  .rodata : {
-    *(.rodata)
-  }>sram1
 
   /*data ici*/
+  _sidata = LOADADDR(.data);
   .data : {
+    _data_begin = .;
     *(.data)
-  }>sram1
+    _data_end = .;
+  }>sram1 AT> flash
 
   /*données non initialiées*/
   _start_bss= .;

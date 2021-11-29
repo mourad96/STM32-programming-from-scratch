@@ -1,37 +1,35 @@
 #include <stdint.h>
-#include "led.h"
 
-int fib(int n)
-{
-    if(n==0)
-    {
-        return 0;
-    }
-    else if (n==1)
-    {
-        return 1;
-    }
-    else
-    {
-        return fib(n-2) + fib(n-1);
-    }
-}
+#include "led.h"
+#include "clocks.h"
+#include "uart.h"
+#include "matrix.h"
+#include "irq.h"
+#include "buttons.h"
+#include "timer.h"
+#include "stm32l475xx.h"
+
+
 int main()
 {
+    
+    clocks_init();
+    irq_init();
     led_init();
+    button_init();
+    matrix_init();
+    uart_init(38400);
+    timer_init(16);
+
+
     while (1)
     {
-        led_g_on();
-      /* for (int i=0; i<1000; i++)//delay
+       if (count_tim2 == 60)
        {
-           asm volatile("nop");
-       }*/
-        led_g_off();
-        for (int i=0; i<1000; i++)//delay
-       {
-           asm volatile("nop");
+           display_image((rgb_color*)trame);
        }
-    }
+     // display_image(_binary_image_raw_start); 
 
+    } 
     return 0;
 }
